@@ -29,7 +29,13 @@ import {
   ZEEBE_TASK_HEADER_TYPE
 } from '../util/bindingTypes';
 
-import { FeelEntryWithContext, FeelTextAreaEntryWithContext } from '../../../entries/FeelEntryWithContext';
+import {
+  FeelEntryWithVariableContext,
+  FeelTextAreaEntryWithVariableContext,
+  FeelEntry,
+  FeelTextAreaEntry
+} from '../../../entries/FeelEntryWithContext';
+
 
 const DEFAULT_CUSTOM_GROUP = {
   id: 'ElementTemplates__CustomProperties',
@@ -285,7 +291,12 @@ function FeelTextAreaProperty(props) {
         debounce = useService('debounceInput'),
         translate = useService('translate');
 
-  return FeelTextAreaEntryWithContext({
+  const TextAreaComponent =
+    isIOMappingProperty(property)
+      ? FeelTextAreaEntryWithVariableContext
+      : FeelTextAreaEntry;
+
+  return TextAreaComponent({
     debounce,
     element,
     getValue: propertyGetter(element, property),
@@ -318,7 +329,12 @@ function FeelProperty(props) {
         debounce = useService('debounceInput'),
         translate = useService('translate');
 
-  return FeelEntryWithContext({
+  const TextFieldComponent =
+    isIOMappingProperty(property)
+      ? FeelEntryWithVariableContext
+      : FeelEntry;
+
+  return TextFieldComponent({
     debounce,
     element,
     getValue: propertyGetter(element, property),
@@ -464,4 +480,14 @@ function groupByGroupId(properties) {
 
 function findCustomGroup(groups, id) {
   return find(groups, g => g.id === id);
+}
+
+/**
+ * Is the given propery backed by an IO mapping?
+ *
+ * @param { { binding: { type: string } } } property
+ * @return {boolean}
+ */
+function isIOMappingProperty(property) {
+  return [ 'zeebe:input', 'zeebe:output' ].includes(property.binding.type);
 }
